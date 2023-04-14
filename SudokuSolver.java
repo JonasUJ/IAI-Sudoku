@@ -18,20 +18,65 @@ public class SudokuSolver implements ISudokuSolver {
     public void setup(int size1) {
         size = size1;
         puzzle = new int[size * size][size * size];
-        D = new ArrayList<ArrayList<Integer>>(size * size * size * size);
+        D = new ArrayList<>(size * size * size * size);
 
         //Initialize each D[X]...
+        for (int i = 1; i <= size * size * size * size; i++) {
+            var inner = new ArrayList<Integer>();
+            for (int j = 1; j <= size * size; j++) {
+                inner.add(j);
+            }
+            D.add(inner);
+        }
 
+        setValue(0, 0, 5);
+        setValue(0, 1, 6);
+        setValue(1, 0, 3);
+        setValue(1, 2, 9);
+        setValue(2, 2, 8);
+        setValue(4, 0, 7);
+        setValue(3, 1, 1);
+        setValue(4, 1, 9);
+        setValue(5, 1, 5);
+        setValue(7, 2, 6);
+        setValue(0, 3, 8);
+        setValue(0, 4, 4);
+        setValue(0, 5, 7);
+        setValue(4, 3, 6);
+        setValue(3, 4, 8);
+        setValue(5, 4, 3);
+        setValue(4, 5, 2);
+        setValue(8, 3, 3);
+        setValue(8, 4, 1);
+        setValue(8, 5, 6);
+        setValue(1, 6, 6);
+        setValue(3, 7, 4);
+        setValue(4, 7, 1);
+        setValue(5, 7, 9);
+        setValue(4, 8, 8);
+        setValue(6, 6, 2);
+        setValue(7, 6, 8);
+        setValue(8, 7, 5);
+        setValue(7, 8, 7);
+        setValue(8, 8, 9);
     }
 
 
     public boolean solve() {
         ArrayList<Integer> asn = GetAssignment(puzzle);
 
-        //INITIAL_FC
-        //FC
+        var initial = INITIAL_FC(asn);
+        if (initial) {
+            var fc = FC(asn);
 
-        return true;
+            if (fc != null) {
+                readInPuzzle(GetPuzzle(fc));
+                return true;
+            }
+        }
+
+        return false;
+
     }
 
     public void readInPuzzle(int[][] p) {
@@ -43,10 +88,40 @@ public class SudokuSolver implements ISudokuSolver {
     //YOUR TASK:  Implement FC(asn)
     //---------------------------------------------------------------------------------
     public ArrayList FC(ArrayList<Integer> asn) {
+        if (!asn.contains(0)) {
+            return asn;
+        }
 
-        return null;//failure
+        var X = asn.indexOf(0);
+        var D_old = clone(D);
+
+        var copy = (ArrayList<Integer>) D.get(X).clone();
+        for (var V : copy) {
+            if (AC_FC(X, V)) {
+                asn.set(X, V);
+                var R = FC(asn);
+
+                if (R != null) {
+                    return R;
+                }
+
+                asn.set(X, 0);
+            }
+
+            D = clone(D_old);
+        }
+
+        return null;
     }
 
+    private static ArrayList<ArrayList<Integer>> clone(ArrayList<ArrayList<Integer>> list) {
+        var newList = new ArrayList<ArrayList<Integer>>(list.size());
+        for (var nestedList : list) {
+            newList.add((ArrayList<Integer>) nestedList.clone());
+        }
+
+        return newList;
+    }
 
     //---------------------------------------------------------------------------------
     // CODE SUPPORT FOR IMPLEMENTING FC(asn)
